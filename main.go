@@ -17,7 +17,7 @@ func main() {
 	// 创建客户端
 	aClient := client.CreateClient(config.Apikey, config.Proxy)
 	// 创建聊天
-	if err := chat.CreateChat(aClient, config.Model, "你是一个猫粮"); err != nil {
+	if err := chat.CreateChat(aClient, config.Model, "你好啊"); err != nil {
 		fmt.Println("Error creating chat:", err)
 		return
 	}
