@@ -5,7 +5,7 @@ import (
 	openai "github.com/sashabaranov/go-openai"
 )
 
-func createMessage(content string) []openai.ChatCompletionMessage {
+func createMessage(content string, contents []string) []openai.ChatCompletionMessage {
 	return []openai.ChatCompletionMessage{
 		{
 			Role:    openai.ChatMessageRoleSystem,
@@ -13,23 +13,34 @@ func createMessage(content string) []openai.ChatCompletionMessage {
 		},
 		{
 			Role:    openai.ChatMessageRoleUser,
+			Content: contents[0],
+		},
+		{
+			Role:    openai.ChatMessageRoleUser,
+			Content: contents[1],
+		},
+		{
+			Role:    openai.ChatMessageRoleUser,
 			Content: content,
-		}}
+		},
+	}
 }
 
-func CreateChat(aClient *openai.Client, model string, content string) (string, error) {
-	message := createMessage(content)
+func CreateChat(aClient *openai.Client, model string, maxTokens int, content string, contents []string) (string, error) {
+	message := createMessage(content, contents)
 	resp, err := aClient.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
 			Model:     model,
 			Messages:  message,
-			MaxTokens: 1000,
+			MaxTokens: maxTokens,
 		},
 	)
 	if err != nil {
 		return "", err
 	}
 	result := resp.Choices[0].Message.Content
+	contents[0] = contents[1]
+	contents[1] = result
 	return result, nil
 }

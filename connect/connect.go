@@ -32,9 +32,14 @@ func init() {
 	}
 	// 创建客户端
 	aClient := client.CreateClient(config.Apikey, config.Proxy)
-
+	// 创建一个哈希表
+	dict := make(map[int64][]string)
 	engine.OnMessage(zero.OnlyToMe).Handle(func(ctx *zero.Ctx) {
-		result, err := chat.CreateChat(aClient, config.Model, ctx.ExtractPlainText())
+		qq := ctx.Event.UserID
+		if _, ok := dict[qq]; !ok {
+			dict[qq] = make([]string, 2)
+		}
+		result, err := chat.CreateChat(aClient, config.Model, config.MaxTokens, ctx.ExtractPlainText(), dict[qq])
 		if err != nil {
 			fmt.Println("Error creating chat:", err)
 			return

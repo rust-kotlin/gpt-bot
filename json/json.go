@@ -7,17 +7,19 @@ import (
 )
 
 type Config struct {
-	Apikey string `json:"apikey"`
-	Model  string `json:"model"`
-	Proxy  string `json:"proxy"`
+	Apikey    string `json:"apikey"`
+	Model     string `json:"model"`
+	Proxy     string `json:"proxy"`
+	MaxTokens int    `json:"max_tokens"`
 }
 
 // LoadConfig 从文件中读取配置，如果文件不存在则返回默认配置
 func LoadConfig(filename string) (*Config, error) {
 	config := &Config{
-		Apikey: "your api key",
-		Model:  "gpt-3.5-turbo",
-		Proxy:  "http://localhost:7890",
+		Apikey:    "your api key",
+		Model:     "gpt-3.5-turbo",
+		Proxy:     "http://localhost:7890",
+		MaxTokens: 200,
 	}
 
 	// 如果文件不存在，则创建文件并写入默认配置
