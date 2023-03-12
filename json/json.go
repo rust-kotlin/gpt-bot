@@ -19,7 +19,7 @@ func LoadConfig(filename string) (*Config, error) {
 		Apikey:    "your api key",
 		Model:     "gpt-3.5-turbo",
 		Proxy:     "http://localhost:7890",
-		MaxTokens: 200,
+		MaxTokens: 800,
 	}
 
 	// 如果文件不存在，则创建文件并写入默认配置
