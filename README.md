@@ -11,7 +11,7 @@
 - model: openai的model，保持默认即可
 - proxy: 本地的代理端口，通过http协议与本地代理连接
 - max_tokens: 最大生成token数，越大生成的文本越长，该最大tokens限制了2个GPT的之前回答和1个最新的提问的总token数
-- super_users: 超级管理员列表，只有超级管理员才可以修改GPT的角色，按一下格式填写`[12345678, 123456789]`
+- super_users: 超级管理员列表，只有超级管理员才可以修改GPT的角色，按以下格式填写`[12345678, 123456789]`
 - weather_api: 天气api，可以在[和风天气](https://id.qweather.com/)中找到，免费api一天上限1000次查询，如不需要请留空
 ## 2. Go程序开发者
 ```cmd
