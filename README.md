@@ -1,6 +1,5 @@
 # GPT-Bot
 这是一个能用调用openai的api接口并且能够通过[go-cqhttp](https://github.com/Mrs4s/go-cqhttp)向QQ发送消息的机器人
-![屏幕截图_20230304_000519.png](https://img1.imgtp.com/2023/03/14/okx9F0vh.png)
 # 使用方法
 ## 1. 普通用户或非Go程序开发者
 1. 下载[go-cqhttp](https://github.com/Mrs4s/go-cqhttp/releases)
