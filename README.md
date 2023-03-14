@@ -23,7 +23,7 @@ go get https://github.com/rust-kotlin/gpt-bot
 # 或者
 git clone https://github.com/rust-kotlin/gpt-bot
 ```
-## 3. 为本项目贡献或者参考本项目思路
+# 为本项目贡献或者参考本项目思路
 1. connect.go中为核心代码，调用了`ZeroBot`库与`go-cqhttp`通信，通过init()函数实现插件式，init()函数仅运行一次
 2. chat.go中为与openai通信的代码，调用`go-openai`库，机器人的角色预设保存在此代码中
 3. jsonconfig.go为负责读取config.json文件的代码，config.json文件中的配置项会被保存在`Config`结构体中
