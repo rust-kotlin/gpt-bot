@@ -18,7 +18,6 @@ var superUsers []int64
 
 // Connect 连接到服务器
 func Connect() {
-
 	zero.RunAndBlock(&zero.Config{
 		NickName:      []string{"gpt-bot"},
 		CommandPrefix: "#",
@@ -45,7 +44,7 @@ func init() {
 	dict := make(map[int64][]string)
 	// 帮助
 	engine.OnCommand("help").SetBlock(true).Handle(func(ctx *zero.Ctx) {
-		ctx.Send(message.Text(`gpt-bot v1.3.0，一个由TomZz开发的人工智能机器人，已开源在https://github.com/rust-kotlin/gpt-bot
+		ctx.Send(message.Text(`gpt-bot v1.6.0，一个由TomZz开发的人工智能机器人，已开源在https://github.com/rust-kotlin/gpt-bot
 #help 获取帮助信息
 #time 获取当前时间
 #weather 获取当前天气，命令后跟着城市名称，例如：#weather北京
