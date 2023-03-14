@@ -2,23 +2,27 @@ package connect
 
 import (
 	"fmt"
-	zero "github.com/wdvxdr1123/ZeroBot"
-	"github.com/wdvxdr1123/ZeroBot/driver"
-	"github.com/wdvxdr1123/ZeroBot/message"
 	"gpt-bot/chat"
 	"gpt-bot/client"
-	"gpt-bot/json"
+	"gpt-bot/jsonconfig"
 	"gpt-bot/plugins/weather"
 	"strings"
 	"time"
+
+	zero "github.com/wdvxdr1123/ZeroBot"
+	"github.com/wdvxdr1123/ZeroBot/driver"
+	"github.com/wdvxdr1123/ZeroBot/message"
 )
+
+var superUsers []int64
 
 // Connect 连接到服务器
 func Connect() {
+
 	zero.RunAndBlock(&zero.Config{
 		NickName:      []string{"gpt-bot"},
 		CommandPrefix: "#",
-		SuperUsers:    []int64{},
+		SuperUsers:    superUsers,
 		Driver: []zero.Driver{
 			driver.NewWebSocketClient("ws://127.0.0.1:8080/", ""),
 		},
@@ -28,11 +32,12 @@ func Connect() {
 func init() {
 	engine := zero.New()
 	// 读取配置文件
-	config, err := json.LoadConfig("config.json")
+	config, err := jsonconfig.LoadConfig("config.json")
 	if err != nil {
 		fmt.Println("Error loading config.json:", err)
 		return
 	}
+	superUsers = config.SuperUsers
 	// 创建客户端
 	aClient := client.CreateClient(config.Apikey, config.Proxy)
 	chat.SystemContent = chat.Dog
@@ -44,11 +49,10 @@ func init() {
 #help 获取帮助信息
 #time 获取当前时间
 #weather 获取当前天气，命令后跟着城市名称，例如：#weather北京
-#role 修改人工智能角色，目前支持的角色有：狗狗，猫娘，原版，默认为狗狗
-gpt-bot将最晚在4月1日停止工作，且行且珍惜，感谢大家的使用！`))
+#role 修改人工智能角色，目前支持的角色有：狗狗，猫娘，原版，默认为狗狗，注意，仅允许超级用户修改人工智能角色`))
 	})
 	// 修改角色
-	engine.OnCommand("role").SetBlock(true).Handle(func(ctx *zero.Ctx) {
+	engine.OnCommand("role", zero.SuperUserPermission).SetBlock(true).Handle(func(ctx *zero.Ctx) {
 		msg := ctx.MessageString()
 		if strings.TrimSpace(msg) == "#role" {
 			ctx.Send(message.Text("请输入角色名称，例如：#role猫娘"))
@@ -76,22 +80,28 @@ gpt-bot将最晚在4月1日停止工作，且行且珍惜，感谢大家的使�
 		ctx.Send(message.Text("当前时间：" + currentTime.Format("2006年01月02日 15:04:05 ") + getChineseWeekday(currentTime.Weekday())))
 	})
 	// 天气
-	engine.OnCommand("weather").SetBlock(true).Handle(func(ctx *zero.Ctx) {
-		msg := ctx.MessageString()
-		if strings.TrimSpace(msg) == "#weather" {
-			ctx.Send(message.Text("请输入城市名称，例如：#weather北京"))
-			return
-		}
-		location := strings.TrimSpace(strings.Replace(msg, "#weather", "", 1))
-		ctx.Send(message.Text("正在获取天气信息，请稍等..."))
-		aWeather, err := weather.GetWeather(location)
-		if err != nil {
-			//fmt.Println("Error getting weather:", err)
-			ctx.Send(err)
-			return
-		}
-		ctx.Send(message.Text(aWeather))
-	})
+	if config.WeatherApikey != "" {
+		engine.OnCommand("weather").SetBlock(true).Handle(func(ctx *zero.Ctx) {
+			msg := ctx.MessageString()
+			if strings.TrimSpace(msg) == "#weather" {
+				ctx.Send(message.Text("请输入城市名称，例如：#weather北京"))
+				return
+			}
+			location := strings.TrimSpace(strings.Replace(msg, "#weather", "", 1))
+			ctx.Send(message.Text("正在获取天气信息，请稍等..."))
+			aWeather, err := weather.GetWeather(location, config.WeatherApikey)
+			if err != nil {
+				//fmt.Println("Error getting weather:", err)
+				ctx.Send(message.Text(err))
+				return
+			}
+			ctx.Send(message.Text(aWeather))
+		})
+	} else {
+		engine.OnCommand("weather").SetBlock(true).Handle(func(ctx *zero.Ctx) {
+			ctx.Send(message.Text("未配置天气API，无法获取天气信息"))
+		})
+	}
 	// 私发消息
 	engine.OnMessage(zero.OnlyToMe).Handle(func(ctx *zero.Ctx) {
 		qq := ctx.Event.UserID

@@ -2,30 +2,34 @@ package weather
 
 import (
 	"compress/gzip"
-	libjson "encoding/json"
+	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
-func GetWeather(location string) (string, error) {
-	// 构造API请求URL
-	apiKey := ""
-	locationID, locationName, err := getGeo(location)
+func GetWeather(location, apiKey string) (string, error) {
+	locationID, locationName, err := getGeo(location, apiKey)
 	if err != nil {
 		//fmt.Println("获取地理位置信息失败：", err)
 		return "", err
 	}
-	url := fmt.Sprintf("https://devapi.qweather.com/v7/weather/3d?location=%s&key=%s", locationID, apiKey)
+	Url := fmt.Sprintf("https://devapi.qweather.com/v7/weather/3d?location=%s&key=%s", locationID, apiKey)
 	// 发送HTTP请求
-	resp, err := http.Get(url)
+	resp, err := http.Get(Url)
 	if err != nil {
 		//fmt.Println("发送HTTP请求失败：", err)
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Println("关闭HTTP响应Body失败：", err)
+		}
+	}(resp.Body)
 	var data map[string]interface{}
 	if strings.Contains(resp.Header.Get("Content-Encoding"), "gzip") {
 		// 如果是gzip压缩，则使用gzip.Reader解压缩响应数据
@@ -33,18 +37,23 @@ func GetWeather(location string) (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("解压缩失败：%v", err)
 		}
-		defer gzipReader.Close()
+		defer func(gzipReader *gzip.Reader) {
+			err := gzipReader.Close()
+			if err != nil {
+				fmt.Println("关闭gzip.Reader失败：", err)
+			}
+		}(gzipReader)
 		jsonData, err := ioutil.ReadAll(gzipReader)
 		if err != nil {
 			return "", fmt.Errorf("读取API响应失败：%v", err)
 		}
-		err = libjson.Unmarshal(jsonData, &data)
+		err = json.Unmarshal(jsonData, &data)
 		if err != nil {
 			return "", fmt.Errorf("解析JSON失败：%v", err)
 		}
 	} else {
 		// 如果响应未经过gzip压缩，则直接读取并解析JSON
-		err = libjson.NewDecoder(resp.Body).Decode(&data)
+		err = json.NewDecoder(resp.Body).Decode(&data)
 		if err != nil {
 			return "", fmt.Errorf("解析JSON失败：%v", err)
 		}
@@ -71,8 +80,7 @@ func GetWeather(location string) (string, error) {
 	}
 }
 
-func getGeo(location string) (string, string, error) {
-	apiKey := ""
+func getGeo(location, apiKey string) (string, string, error) {
 	// 构建请求URL
 	Url := fmt.Sprintf("https://geoapi.qweather.com/v2/city/lookup?location=%s&key=%s", url.QueryEscape(location), apiKey)
 	// 发送HTTP GET请求
@@ -80,7 +88,12 @@ func getGeo(location string) (string, string, error) {
 	if err != nil {
 		return "", "", fmt.Errorf("发送HTTP请求失败：%v", err)
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Println("关闭HTTP响应Body失败：", err)
+		}
+	}(resp.Body)
 	// 读取响应数据并解析JSON
 	var result map[string]interface{}
 	// 检查响应是否为gzip压缩
@@ -90,18 +103,23 @@ func getGeo(location string) (string, string, error) {
 		if err != nil {
 			return "", "", fmt.Errorf("解压缩失败：%v", err)
 		}
-		defer gzipReader.Close()
+		defer func(gzipReader *gzip.Reader) {
+			err := gzipReader.Close()
+			if err != nil {
+				fmt.Println("关闭gzip.Reader失败：", err)
+			}
+		}(gzipReader)
 		jsonData, err := ioutil.ReadAll(gzipReader)
 		if err != nil {
 			return "", "", fmt.Errorf("读取API响应失败：%v", err)
 		}
-		err = libjson.Unmarshal(jsonData, &result)
+		err = json.Unmarshal(jsonData, &result)
 		if err != nil {
 			return "", "", fmt.Errorf("解析JSON失败：%v", err)
 		}
 	} else {
 		// 如果响应未经过gzip压缩，则直接读取并解析JSON
-		err = libjson.NewDecoder(resp.Body).Decode(&result)
+		err = json.NewDecoder(resp.Body).Decode(&result)
 		if err != nil {
 			return "", "", fmt.Errorf("解析JSON失败：%v", err)
 		}
