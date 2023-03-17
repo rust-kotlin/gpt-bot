@@ -20,7 +20,7 @@ func createMessage(content string, contents []string) []openai.ChatCompletionMes
 			Content: contents[0],
 		},
 		{
-			Role:    openai.ChatMessageRoleUser,
+			Role:    openai.ChatMessageRoleAssistant,
 			Content: contents[1],
 		},
 		{
@@ -30,21 +30,22 @@ func createMessage(content string, contents []string) []openai.ChatCompletionMes
 	}
 }
 
-func CreateChat(aClient *openai.Client, model string, maxTokens int, content string, contents []string) (string, error) {
+func CreateChat(aClient *openai.Client, model string, maxTokens int, temperature float32, content string, contents []string) (string, error) {
 	message := createMessage(content, contents)
 	resp, err := aClient.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model:     model,
-			Messages:  message,
-			MaxTokens: maxTokens,
+			Model:       model,
+			Messages:    message,
+			MaxTokens:   maxTokens,
+			Temperature: temperature,
 		},
 	)
 	if err != nil {
 		return "", err
 	}
 	result := resp.Choices[0].Message.Content
-	contents[0] = contents[1]
+	contents[0] = content
 	contents[1] = result
 	return result, nil
 }

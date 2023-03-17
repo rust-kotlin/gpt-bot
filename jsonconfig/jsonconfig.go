@@ -13,6 +13,8 @@ type Config struct {
 	MaxTokens     int     `json:"max_tokens"`
 	SuperUsers    []int64 `json:"super_users"`
 	WeatherApikey string  `json:"weather_apikey"`
+	Temperature   float32 `json:"temperature"`
+	BaseUrl       string  `json:"base_url"`
 }
 
 // LoadConfig 从文件中读取配置，如果文件不存在则返回默认配置
@@ -24,6 +26,8 @@ func LoadConfig(filename string) (*Config, error) {
 		MaxTokens:     800,
 		SuperUsers:    []int64{},
 		WeatherApikey: "",
+		Temperature:   0.5,
+		BaseUrl:       "",
 	}
 
 	// 如果文件不存在，则创建文件并写入默认配置
